@@ -20,7 +20,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/4.1/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-93o%37ev7)s-a3p=@vk)0clxbrn3d5x&+vyffsx#=$qq#-)^u*'
+SECRET_KEY = 'django-insecure-)6w&)^_%$v$31q#!idplzpche*f_75m@peqc0qm@zgwgc3w_ro'
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
@@ -37,10 +37,14 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'order.apps.OrderConfig',
+    'corsheaders',
+    'rest_framework',
+    'order',
+    'member.apps.MemberConfig',
 ]
 
 MIDDLEWARE = [
+    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -122,3 +126,32 @@ STATIC_URL = 'static/'
 # https://docs.djangoproject.com/en/4.1/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+
+SILENCED_SYSTEM_CHECKS = ['urls.W002']
+
+REST_FRAMEWORK = {
+    "DEFAULT_PAGINATION_CLASS": "rest_framework.pagination.PageNumberPagination",
+    "PAGE_SIZE": 10,
+}
+
+import datetime
+SIMPLE_JWT = {
+    "ACCESS_TOKEN_LIFETIME": datetime.timedelta(hours=2), #로그인 여부를 알 수 있는 토큰
+    "REFRESH_TOKEN_LIFETIME": datetime.timedelta(days=1), #갱신여부를 알 수 있는 토큰 #자동로그인은 이 기간이 길게 되있는 것.
+    "AUTH_HEADER_TYPES": ("JWT",),
+}
+
+AUTH_USER_MODEL = "member.Member"
+AUTHENTICATION_BACKENDS = [
+    "member.auth.MemberAuth"
+]
+
+INTERNAL_IPS = [
+    "127.0.0.1",
+]
+
+if DEBUG:
+    CORS_ALLOW_ALL_ORIGINS = True
+
+
