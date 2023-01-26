@@ -18,3 +18,15 @@ class Order(models.Model):
         db_table = 'shinhan_order'
         verbose_name = '주문정보'
         verbose_name_plural = '주문정보'
+
+class Comment(models.Model):
+    member = models.ForeignKey('member.Member',on_delete=models.CASCADE, verbose_name='회원') 
+    # 순환 참조 되는 것을 막기 위해 import 하는 대신 문자열로 가져온다. 'member.Member'
+    order = models.ForeignKey('order.Order',on_delete=models.CASCADE, verbose_name='상품') 
+    content = models.TextField(verbose_name='내용')
+    tstamp = models.DateTimeField(auto_now_add= True, verbose_name='작성시간')
+
+    class Meta:
+        db_table = 'shinhan_product_comment'
+        verbose_name = '상품 댓글'
+        verbose_name_plural = '상품댓글'
