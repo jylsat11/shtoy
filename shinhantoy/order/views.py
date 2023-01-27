@@ -4,7 +4,8 @@ from rest_framework.permissions import IsAuthenticated
 from .serializers import (
     OrderSerializer, 
     CommentSerializer,
-    CommentCreateSerializer
+    CommentCreateSerializer,
+    CommentDetailSerializer
 )
 from .models import Order, Comment
 
@@ -35,7 +36,8 @@ class OrderDetailView(
         return self.retrieve(request, args, kwargs)
 
 class CommentListView(
-    mixins.ListModelMixin, 
+    mixins.ListModelMixin,
+    mixins.DestroyModelMixin, 
     generics.GenericAPIView
 ):
     serializer_class = CommentSerializer
@@ -51,6 +53,28 @@ class CommentListView(
     def get(self, request, *args, **kwargs):
 
         return self.list(request,args,kwargs) 
+    
+class CommentDetailView(
+    mixins.RetrieveModelMixin,
+    mixins.DestroyModelMixin, 
+    generics.GenericAPIView
+):
+    serializer_class = CommentDetailSerializer
+
+    def get_queryset(self):
+        comment_id = self.kwargs.get('comment_id')
+        if comment_id:
+            return Comment.objects.filter(comment_id = comment_id).order_by('-id')
+
+        return Comment.objects.none()
+
+  
+    def get(self, request, *args, **kwargs):
+
+        return self.list(request,args,kwargs) 
+    
+    def delete(self, request, *args, **kwargs):
+        return self.destroy(request, args, kwargs)
 
 class CommentCreateView(
     mixins.CreateModelMixin,
