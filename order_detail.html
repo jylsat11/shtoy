@@ -11,7 +11,7 @@
         const order_id = search.get('order_id');
         let page = search.get('page');
         page = Number(page);
-
+        
         if (!page) {
             page = 1;
         }
@@ -61,12 +61,16 @@
                         
                         if (maxpage>5) {
 
-                            if (startpage <1) {
-                                startpage = 1;
+
+                            if (page<=2) {
+                                let startpage = page;
+                                let endpage = page+4;
                             }
-                           if (endpage > maxpage) {
-                                endpage = maxpage;
-                           }
+                            else {
+                                let startpage = page-2;
+                                let endpage = page+2;
+                            }
+
                         }
                                                     
                         for (let i=startpage; i<=endpage; i++) {
