@@ -9,6 +9,12 @@
     <script>
         const search = new URLSearchParams(location.search);
         const order_id = search.get('order_id');
+        let page = search.get('page');
+        page = Number(page);
+        
+        if (!page) {
+            page = 1;
+        }
 
         function create() {
             $.ajax({
@@ -27,7 +33,7 @@
                 }
             });
         }
-
+        
         $(document).ready(function () {
             if (order_id > 0) {
                 $.get("http://127.0.0.1:8000/api/order/" + order_id)
@@ -43,9 +49,37 @@
                         }
                     });
 
-                $.get("http://127.0.0.1:8000/api/order/" + order_id + '/comment')
+                $.get("http://127.0.0.1:8000/api/order/" + order_id + '/comment?page='+page)
                     .then((result) => {
                         $("#comments").html("");
+                        $("#pagination").html("");
+
+                        const total = result.count;
+                        let maxpage = Math.ceil(total/10);
+                        let startpage = 1;
+                        let endpage = maxpage;
+                        
+                        if (maxpage>5) {
+
+
+                            if (page<=2) {
+                                let startpage = page;
+                                let endpage = page+4;
+                            }
+                            else {
+                                let startpage = page-2;
+                                let endpage = page+2;
+                            }
+
+                        }
+                                                    
+                        for (let i=startpage; i<=endpage; i++) {
+                            $("#pagination").append(
+                                $(`<li class="page-item"><a class="page-link" onclick="go_page(${i})">${i}</a></li>`)
+                            )
+                        
+                            }   
+                    
 
                         for (let i=0; i<result.results.length; i++) {
                             const comment = result.results[i];
@@ -60,6 +94,10 @@
                     });
             }
         });
+        function go_page(page) {
+ 
+            window.location.href = `?order_id=${order_id}&page=${page}`;
+        }
     </script>
   </head>
   <body>
@@ -81,6 +119,11 @@
         <ul class="list-group list-group-flush" id="comments">
             <li class="list-group-item">댓글 내용입니다.<br><br>이태화 (2022.12.12 11:11:11)</li>
         </ul>
+        <nav aria-label="Page navigation example">
+            <ul class="pagination" id = "pagination">
+                <li class="page-item"></li>
+            </ul>
+        </nav>
     </div>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-kenU1KFdBIe4zVF0s0G1M5b4hcpxyD9F7jL+jjXkk+Q2h455rYXK/7HAuoJl+0I4" crossorigin="anonymous"></script>
   </body>
