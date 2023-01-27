@@ -7,108 +7,80 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-rbsA2VBKQhggwzxH7pPCaAqO46MgnOM80zW1RWuH61DGLwZJEdK2Kadq2F9CUG65" crossorigin="anonymous">
     <script src="https://code.jquery.com/jquery-3.6.3.min.js" integrity="sha256-pvPw+upLPUjgMXY0G+8O0xUf+/Im1MZjXxxgOcBQBXU=" crossorigin="anonymous"></script>
     <script>
+        const search = new URLSearchParams(location.search);
+        const order_id = search.get('order_id');
 
-        $(document).ready(function () {
-            const search = new URLSearchParams(location.search);
-            const order_id = search.get('order_id');
-            if (order_id >0) {
-                $.get("http://127.0.0.1:8000/api/order/" + order_id)
-                    .then((result) => {
-                        $("#orderOrd_ymd").text(result.ord_ymd);
-                        $("#orderAcct_mang_dbrn_code").text(result.acct_mang_dbrn_code);
-                        $("#orderOrd_no").text(result.ord_no);
-                        $("#orderAcct_no").text(result.acct_no);
-                        $("#orderCallv_type_code").text(result.callv_type_code);
-                        $("#orderSell_buy_tp_code").text(result.sell_buy_tp_code);
-                        $("#orderStbd_code").text(result.stbd_code);
-                        $("#orderOrd_qty").text(result.ord_qty);
-                        $("#orderOrd_uv").text(result.ord_uv);
-                        $("#orderMrgn_base_uv").text(result.mrgn_base_uv);
-                    });
-                $.get("http://127.0.0.1:8000/api/order/"+order_id+"/comment")
-                    .then((result) => {
-                        $("#comments").html("");
-                        
-                        for (let i=0; i<result.results.length; i++) {
-                            const comment = result.results[i];
-
-                            $("#comments").append(
-                                $(`<li class="list-group-item">
-                                    ${comment.content}<br><br>
-                                    ${comment.member_username} (${comment.tstamp})
-                                </li>`)
-                            );
-                        }
-                    });
-                
-                
-            }
-            
-        });
-        function commentRegister() {
-            const search = new URLSearchParams(location.search);
-            const order_id = search.get('order_id');
-            console.log(order_id);
+        function create() {
             $.ajax({
                 type: 'POST',
                 url: 'http://127.0.0.1:8000/api/order/comment',
                 data: {
-                    order: order_id,
                     content: $("#content").val(),
+                    order: order_id,
                 },
-
                 beforeSend: function(xhr) {
-                xhr.setRequestHeader("Authorization","JWT "+$("#token").val());
+                    xhr.setRequestHeader("Authorization", "JWT " + $("#token").val());
                 },
                 success: (result) => {
-                    alert("댓글이 입력되었습니다.");
+                    alert("등록되었습니다.");
                     location.reload();
-                },
-                error: (result) => {
-                console.error(result);
-                } 
-            })
+                }
+            });
         }
+
+        $(document).ready(function () {
+            if (order_id > 0) {
+                $.get("http://127.0.0.1:8000/api/order/" + order_id)
+                    .then((result) => {
+                        const keys = Object.keys(result);
+                        $("#info").html("");
+                        
+                        for (let i=0; i<keys.length; i++){
+                            let key = keys[i];
+                            $("#info").append(
+                                $(`<li>${key}: ${result[key]}</li>`)
+                            );
+                        }
+                    });
+
+                $.get("http://127.0.0.1:8000/api/order/" + order_id + '/comment')
+                    .then((result) => {
+                        $("#comments").html("");
+
+                        for (let i=0; i<result.results.length; i++) {
+                            const comment = result.results[i];
+                            
+                            $("#comments").append(
+                                $(`<li class="list-group-item">
+                                    ${comment.member_username} (${comment.tstamp})<br><br>
+                                    ${comment.content}
+                                </li>`)
+                            );
+                        }
+                    });
+            }
+        });
     </script>
   </head>
   <body>
-    <div class = "container">
-        <!-- <hi id="orderOrd_no" class ="text-center"></hi> -->
-        <ul>
-            <li>ord_ymd: <span id="orderOrd_ymd"></span></li>
-            <li>acct_mang_dbrn_code: <span id="orderAcct_mang_dbrn_code"></span></li>
-            <li>ord_no: <span id="orderOrd_no"></span></li>
-            <li>acct_no: <span id="orderAcct_no"></span></li>
-            <li>callv_type_code: <span id="orderCallv_type_code"></span></li>
-            <li>sell_buy_tp_code: <span id="orderSell_buy_tp_code"></span></li>
-            <li>stbd_code: <span id="orderStbd_code"></span></li>
-            <li>ord_qty: <span id="orderOrd_qty"></span></li>
-            <li>ord_uv: <span id="orderOrd_uv"></span></li>
-            <li>mrgn_base_uv: <span id="orderMrgn_base_uv"></span></li>
+    <div class="container">
+        <ul id="info">
         </ul>
-        
+        <hr>
+        <h5>댓글 쓰기</h5>
         <div class="form-group mb-3">
-            <label for="content">댓글</label>
-            <textarea id="content" name="content" rows="4" cols="50">
-
-            </textarea>
-           
-            <!-- <input type="text" class="form-control" id="content" name="content" /> -->
-        </div>
-        <div class="form-group mb-3">
-            <label for="token">token</label>
+            <label for="token">토큰</label>
             <input type="text" class="form-control" id="token" name="token" />
         </div>
-        <div class="text-right">
-            <button type="button" class="btn btn-primary" onclick="commentRegister()">입력</button>
-          </div>
-        
-        <ul class="list-group list-group-flush" id="comments">
-            <li class="list-group-item">댓글 내용입니다.<br><br>김주연 (2022.12.12 11:11:11) </li>
- 
-        </ul>
-        
+        <div class="mb-3">
+            <label for="content" class="form-label">내용</label>
+            <textarea class="form-control" id="content" name="content" rows="3"></textarea>
+        </div>
+        <button type="button" class="btn btn-primary" onclick="create()">댓글등록</button>
         <hr>
+        <ul class="list-group list-group-flush" id="comments">
+            <li class="list-group-item">댓글 내용입니다.<br><br>이태화 (2022.12.12 11:11:11)</li>
+        </ul>
     </div>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-kenU1KFdBIe4zVF0s0G1M5b4hcpxyD9F7jL+jjXkk+Q2h455rYXK/7HAuoJl+0I4" crossorigin="anonymous"></script>
   </body>
